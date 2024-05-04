@@ -1,12 +1,9 @@
-import time
+from datetime import datetime
 import socket
 import threading
 import cv2  as cv
 import numpy as np 
-import imageio
 import PIL.Image as Image
-import io
-import base64
 
 from PIL import ImageFile
 
@@ -67,8 +64,9 @@ def handle_client(conn, addr):
   connected = True
   
   img_bytes = bytes()
+  start_index = 0
   door_lock = 0
-  isFirst = True 
+  
   while connected :
 
     """ Door Lock Test System 
@@ -80,37 +78,19 @@ def handle_client(conn, addr):
 
     if ("END" not in str(raw_msg)):
 
-      if isFirst : 
-        print(raw_msg)
-        isFirst = False
-      
-      print("==== MSG RECV ====")
-      print(f"LEN of the message {len(raw_msg)}")
-      print(raw_msg[:10])
-      
       img_bytes += raw_msg
-
-      print(f"LEN of total message {len(img_bytes)}")
 
     elif("END" in str(raw_msg)):
       
-      print(f"LEN of total message in END  {len(img_bytes)}")
-    
-      img_bytes = img_bytes[80:]
 
-      img_as_arr = np.fromstring(img_bytes, np.int8)
+      start_index = img_bytes.index(b'JFIF')
+      
+      file = open(f"image_{datetime.now()}.jpg", "wb")
+      file.write(img_bytes[start_index -6 :])
+      file.close()
 
-      img = cv.imdecode(img_as_arr, cv.IMREAD_COLOR)
-
-      cv.imshow("Transfered Img", img)
-
-      cv.waitKey()
-
-      file = open("image.jpg", "rb")
-      file.write(img_bytes)
-      print("Msg ended")
-
-
+      img_bytes = bytes()
+      start_index = 0
 
 
     elif raw_msg == "!DISCONNECT":

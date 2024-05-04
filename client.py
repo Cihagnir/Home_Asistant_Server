@@ -1,9 +1,9 @@
 import socket
 
 header = 2048
-port = 120
-format = "charmap"
-server_ip = "192.168.1.114"
+port =  5050
+format = "utf-8"
+server_ip = "192.168.1.243"
 addr = (server_ip,port)
 
 client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
