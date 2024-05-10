@@ -11,12 +11,13 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 header = 4096
 port = 120
-IPV4 = "192.168.1.148"
+IPV4 = "192.168.89.42"
 addr = (IPV4,port)
 Server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 Server.bind(addr)
 
 
+counter = 0
 
 
 
@@ -63,37 +64,28 @@ def handle_client(conn, addr):
   
   connected = True
   
-  img_bytes = bytes()
-  start_index = 0
+  img_bytes = b''
   door_lock = 0
   
+
   while connected :
 
-    """ Door Lock Test System 
-    door_lock = door_lock_message_sender( str(door_lock), conn, door_lock)
-    time.sleep(10)
-    """
 
     raw_msg = conn.recv(header)
 
-    if ("END" not in str(raw_msg)):
+    img_bytes += raw_msg
 
-      img_bytes += raw_msg
-
-    elif("END" in str(raw_msg)):
+    if(b'\xFF\xD9' == raw_msg[-2:]):
       
 
-      start_index = img_bytes.index(b'JFIF')
-      
-      file = open(f"image_{datetime.now()}.jpg", "wb")
-      file.write(img_bytes[start_index -6 :])
+      file = open(f"img_full_{datetime.now()}.jpg", "wb")
+      file.write(img_bytes)
       file.close()
 
-      img_bytes = bytes()
-      start_index = 0
+      print(f"LEN of total img in END {len(img_bytes)}")
+      img_bytes = b''
 
-
-    elif raw_msg == "!DISCONNECT":
+    elif raw_msg == b'DISCONNECT':
 
         print("lol there")
         connected = False
