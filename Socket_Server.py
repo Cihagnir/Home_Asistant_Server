@@ -1,105 +1,72 @@
-from datetime import datetime
+
 import socket
 import threading
-import cv2  as cv
-import numpy as np 
-import PIL.Image as Image
 
-from PIL import ImageFile
-
-ImageFile.LOAD_TRUNCATED_IMAGES = True
-
-header = 4096
-port = 120
-IPV4 = "192.168.89.42"
-addr = (IPV4,port)
-Server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-Server.bind(addr)
+import Client as Client_Lib
 
 
-counter = 0
+class Server(object) : 
+
+  def __init__(self):
+    
+    # Server Proporties Define
+    self.header = 4096
+    self.port = 120
+    self.IPV4 = "192.168.124.42"
+    self.server_addr = (self.IPV4, self.port)
 
 
+    # Sub-System Status Flag
+    self.Dict_Flag = {
+      "Is_Buzzer_On" : False,
+      "Is_Door_Locked" : True,
+      "Is_Fire_Spring_On" : False,
+    }
 
-def door_lock_message_sender(msg, conn, last_state):
+    self.Dict_Client = {}
 
-  if door_lock == 0 :
-    door_lock = 1
-  elif door_lock == 1 :
-    door_lock = 0
+    self.Server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self.Server.bind(self.server_addr)
 
-  print("--------- MSG SENDER---------")
-  print(msg)
-  encoded_msg = msg.encode("utf8")
-  msg_lenght = len(encoded_msg)
-  send_lenght = str(msg_lenght).encode()
-  send_lenght += b" " * (header - len(send_lenght))
-  conn.send(encoded_msg)
-  print("--------- MSG SENDED ---------")
+    self.Server.listen()
 
-  return door_lock
+    print("-------- SERVER START LISTENING -------- ")
+    print(f"Server Addrs : {self.server_addr}")
+    while True:
 
-def raw_msg_handler(raw_list) : 
-  print("-------------------- MSG HAND --------------------")
-  image_array = [] 
-  for val in raw_list :
+      client_conn, client_addr = self.Server.accept()
 
-    temp_var = [ int( val[:2], 16 ), int( val[2:4], 16 ) , int( val[4:], 16 )]
-    image_array.append(temp_var)
+      client_thread = threading.Thread( target= self.Client_Handler, args=(client_conn, client_addr, True))
+
+      client_thread.start()
 
 
-  image_array = np.array(image_array)
-  image_array = image_array.reshape((16,16,3))
+  def Client_Handler(self, client_conn, client_addr, is_connected):
 
-  return image_array
+    client_obj = Client_Lib.Parrent_Client(client_conn, client_addr, is_connected)
 
-def img_msg_handler(): 
-  pass
+    print(f"Connectoin Catch {client_obj.client_IP, client_obj.client_port}")    
 
-
-def handle_client(conn, addr):
-
-  print("-------------------- HAND LOOP --------------------")
-  print(f"[NEW CONNECTION] {addr} connected")
-  
-  connected = True
-  
-  img_bytes = b''
-  door_lock = 0
-  
-
-  while connected :
-
-
-    raw_msg = conn.recv(header)
-
-    img_bytes += raw_msg
-
-    if(b'\xFF\xD9' == raw_msg[-2:]):
+    while( client_obj.Is_connected ) :
       
+      recv_msg = client_obj.client_conn.recv(self.header)
+      
+      self.Dict_Flag = client_obj.Msg_Hand(recv_msg, self)
 
-      file = open(f"img_full_{datetime.now()}.jpg", "wb")
-      file.write(img_bytes)
-      file.close()
+      print(f"SERVER : Server Clients {self.Dict_Client}")
 
-      print(f"LEN of total img in END {len(img_bytes)}")
-      img_bytes = b''
 
-    elif raw_msg == b'DISCONNECT':
-
-        print("lol there")
-        connected = False
-        conn.close()
-
-def start():
-  Server.listen()
-  while True:
-    print("-------------------- MAIN LOOP --------------------")
-    conn, addr = Server.accept()
-    thread = threading.Thread(target=handle_client,args=(conn, addr))
-    thread.start()
+Server_Obj = Server()
 
 
 
-print("[STARTING] server is starting ... ")
-start()
+
+
+
+
+
+
+
+
+
+
