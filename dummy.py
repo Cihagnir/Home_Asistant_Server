@@ -1,18 +1,18 @@
-from datetime import datetime
+import time
 import socket
 import threading
 import cv2  as cv
 import numpy as np 
 import PIL.Image as Image
-import time
+from datetime import datetime
 
 from PIL import ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 header = 4096
-port = 130
-IPV4 = "192.168.124.42"
+port = 120
+IPV4 = "192.168.223.42"
 addr = (IPV4,port)
 Server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 Server.bind(addr)
@@ -72,14 +72,13 @@ def handle_client(conn, addr):
   print(f"Decoded Raw Msg {temp}")
 
   
-  msg = b'10101100100'
+  msg = b'1'
   print(f"sended msg {msg}")
   print(f"sended msg {msg[0]}")
   conn.send(msg)
 
 
 
-  """
   img_bytes = b''
   door_lock = 0
   
@@ -88,7 +87,11 @@ def handle_client(conn, addr):
 
 
     raw_msg = conn.recv(header)
+    print(f"Lenght of the photo is {raw_msg}")
+    temp = int.from_bytes(raw_msg,"big")
+    print(f"Lenght of the photo is {temp}")
 
+    """
     img_bytes += raw_msg
 
     if(b'\xFF\xD9' == raw_msg[-2:]):
@@ -107,7 +110,6 @@ def handle_client(conn, addr):
         connected = False
         conn.close()
     """
-  
 def start():
   Server.listen()
   while True:

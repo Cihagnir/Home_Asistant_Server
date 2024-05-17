@@ -1,5 +1,5 @@
-from datetime import datetime
-
+import cv2  as cv
+import numpy as np
 
 class Parrent_Client(object): 
 
@@ -28,10 +28,10 @@ class Parrent_Client(object):
   def Msg_Hand(self, client_msg : bytes, server_obj) -> dict : 
 
     if self.Is_Init : 
-      self.Child_Client.Child_Client_Msg_Hand(client_msg)
       
+      self.Child_Client.Child_Client_Msg_Hand(client_msg, server_obj)
+
       
-    
     else :
 
       splited_msg: list = client_msg.decode(self.msg_decode_format).split("_")
@@ -49,7 +49,12 @@ class Parrent_Client(object):
           
           self.Is_Init = True 
 
-          
+          if len(server_obj.Dict_Client) == 2 : 
+
+            server_obj.Dict_Flag["Is_Cam_One_Started"] = True
+            server_obj.Dict_Flag["Is_Cam_Two_Started"] = True
+
+
 
 
 class Camera_Client(object) : 
@@ -62,28 +67,33 @@ class Camera_Client(object) :
     print(f"CHILD CLIENT : One Camera Client Init {self.camera_ID}")
  
 
-  def Child_Client_Msg_Hand(self, client_msg : bytes):
+  def Child_Client_Msg_Hand(self, client_msg : bytes, server_obj):
     """
     That is the function we handle the image msg and 
     Send into Img progress function .
     """
+    self.img_msg_byte += client_msg
 
     if(b'\xFF\xD9' == client_msg[-2:]):
-      
 
-      file = open(f"img_480p_{datetime.now()}_{self.camera_ID}.jpg", "wb")
+      """
+      file = open(f"img_480p_{self.camera_ID}_{datetime.now()}.jpg", "wb")
       file.write(self.img_msg_byte)
       file.close()
+      """
+      img_array = np.frombuffer(self.img_msg_byte, dtype= np.uint8)
+      cv_img = cv.imdecode(img_array, cv.IMREAD_COLOR)
 
-      print(f"LEN of total img in END {len(self.img_msg_byte)}")
+      if self.camera_ID == "CAM_01" :
+        server_obj.Face_Rec_Func(self.camera_ID,cv_img)
 
-    else:
+      else :
+        server_obj.Object_Recognition(self.camera_ID,cv_img)
 
-      self.img_msg_byte += client_msg
+      print(f"{self.camera_ID} :  of total img in END {len(self.img_msg_byte)}")
       self.img_msg_byte = b''
 
-    
-
+      
 class Door_Lock_Client(object) :
 
   def __init__(self) -> None:
@@ -96,7 +106,10 @@ class Buzzer_Client(object) :
     pass
 
 
+class Fire_Valve(object):
 
+  def __init__(self) -> None:
+    pass
 
 
 

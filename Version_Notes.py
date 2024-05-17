@@ -1,21 +1,17 @@
 """
-Version 0.0.3 
+Version 0.0.5
 
 
 Updates : 
 
-> Server updated into object orianted version 
-> Server, Parrent_Client & Cam_Child_Client created nearly bare metal version 
-
+> Server, Parrent_Client & Cam_Child_Client updated into Version 0.0.2 
+> Image Recognition function has to embedded into system  
+> Image recv function fixed 
 
 To - Do Plans : 
 > Door Lock, Buzzer & Valve class has to created 
-> Server Message protocol should be determined 
-> Image Recognatoin function has to embedded into system  
-
-
-News : 
-> Promt drill with self passing function is created 
+> Flag Check function has to writen
+> Firebase connection thread on __init__
 
 
 """
