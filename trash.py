@@ -37,18 +37,29 @@ foo_obj.deneme()
 
 """
 
-import numpy as np
-import cv2
+import asyncio
+import time
 
-img_file = open("img_480p_CAM_01_2024-05-17 13:06:53.265861.jpg",'rb')
-data = img_file.read()
-img_file.close()
+is_called = False
 
-img_array = np.frombuffer(data, dtype= np.uint8)
-print(type(data))
-print(img_array.shape)
+async def waitlol():
+  is_called = True 
+  print("start")
+  await asyncio.sleep(5)
+  print("finish")
 
-img_array = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-# Show the image
-cv2.imshow('image',img_array)
-cv2.waitKey(0)
+
+async def main():
+
+  is_called = False
+  
+  while True :
+    print("lol")
+    if not is_called:
+      asyncio.create_task(waitlol())
+      is_called = True
+    await asyncio.sleep(1)
+
+
+asyncio.run(main())
+
